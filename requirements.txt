@@ -1,3 +1,8 @@
 google-api-python-client
 litellm
 python-dotenv
+pandas
+rich
+weasyprint
+markdown
+isodate

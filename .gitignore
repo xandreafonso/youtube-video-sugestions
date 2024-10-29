@@ -1,5 +1,7 @@
 .env.local
-youtube_db.sqlite3
+youtube_db.sqlite3*
+report*.md
+report*.pdf
 
 
 # Byte-compiled / optimized / DLL files

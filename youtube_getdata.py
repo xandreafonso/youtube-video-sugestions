@@ -11,16 +11,19 @@ load_dotenv()
 
 def chl_info(handle):
     channelId = get_channel_id_by_handle(handle)
+
     if not channelId:
         raise Exception(f"Canal {handle} não encontrado!")
 
     last_videos = get_last_videos(channelId)
     last_videos_list = []
+
     for video in last_videos:
         last_videos_list.append(YtVideoInfo(channelId, video['title'], video['videoId'], video['viewCount'], video['publishedAt']))
 
     trending_videos = get_trending_videos(channelId)
     trending_videos_list = []
+
     for video in trending_videos:
         trending_videos_list.append(YtVideoInfo(channelId, video['title'], video['videoId'], video['viewCount'], video['publishedAt']))
 
@@ -30,26 +33,25 @@ def chl_info(handle):
 
 handles = [
     "@AlanaAnijar",
-    # "@rafaelgratta",
-    # "@NeuroVox",
-    # "@ClaramenteNT",
-    # "@drali",
-    # "@Katimorton",
-    # "@TherapyinaNutshell",
-    # "@MarkTyrrellUnk",
-    # "@theanxietyproject",
-    # "@ocdandanxiety",
-    # "@PracticalPsychologyTips",
-    # "@PsychExplained",
-    # "@AndyLuttrellPsych",
-    # "@DrJulie",
-    # "@DraAnnaLuyzaAguiar",
-    # "@podpeopleanabeatriz",
-    # "@AugustoCury",
-    # "@NeurologiaePsiquiatria",
-    # "@danielamargotti",
-    # "@psicojuliapaschoalino",
-    # "@psicologasandrabueno"
+    "@rafaelgratta",
+    "@NeuroVox",
+    "@ClaramenteNT",
+    "@drali",
+    "@Katimorton",
+    "@TherapyinaNutshell",
+    "@MarkTyrrellUnk",
+    "@theanxietyproject",
+    "@ocdandanxiety",
+    "@PracticalPsychologyTips",
+    "@PsychExplained",
+    "@DrJulie",
+    "@DraAnnaLuyzaAguiar",
+    "@podpeopleanabeatriz",
+    "@AugustoCury",
+    "@NeurologiaePsiquiatria",
+    "@danielamargotti",
+    "@psicojuliapaschoalino",
+    "@psicologasandrabueno"
 ]
 
 if __name__ == "__main__":
@@ -57,9 +59,11 @@ if __name__ == "__main__":
 
     for handle in handles:
         try:
+            print(f"Obtendo informações do canal {handle}")
             c_info = chl_info(handle)
 
             insert(conn, c_info)
+            print(f"Canal {handle} inserido com sucesso!")
         except Exception as e:
             print(f"Erro ao obter informações do canal {handle}: {e}")
             continue

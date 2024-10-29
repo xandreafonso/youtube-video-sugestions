@@ -1,7 +1,7 @@
-from litellm import completion
 import os
 import googleapiclient.discovery
 from dotenv import load_dotenv
+import isodate
 
 load_dotenv()
 
@@ -44,14 +44,21 @@ def get_last_videos(channel_id):
     if not video_ids:
         return []
 
+    # Inclui 'contentDetails' para pegar a duração dos vídeos
     request = youtube.videos().list(
-        part="snippet,statistics",
+        part="snippet,statistics,contentDetails",
         id=",".join(video_ids)
     )
     response = request.execute()
 
     videos = []
     for video in response['items']:
+        duration = video['contentDetails']['duration']
+
+        # Exclui vídeos com menos de 60 segundos (Shorts)
+        if is_short_video(duration):
+            continue
+
         video_info = {
             'title': video['snippet']['title'],
             'videoId': video['id'],
@@ -81,14 +88,21 @@ def get_trending_videos(channel_id):
     if not video_ids:
         return []
 
+    # Inclui 'contentDetails' para pegar a duração dos vídeos
     request = youtube.videos().list(
-        part="snippet,statistics",
+        part="snippet,statistics,contentDetails",
         id=",".join(video_ids)
     )
     response = request.execute()
 
     trending_videos = []
     for video in response['items']:
+        duration = video['contentDetails']['duration']
+
+        # Exclui vídeos com menos de 60 segundos (Shorts)
+        if is_short_video(duration):
+            continue
+
         video_info = {
             'title': video['snippet']['title'],
             'videoId': video['id'],
@@ -98,6 +112,11 @@ def get_trending_videos(channel_id):
         trending_videos.append(video_info)
 
     return trending_videos
+
+def is_short_video(duration):
+    duration_seconds = isodate.parse_duration(duration).total_seconds()
+    
+    return duration_seconds < 180
 
 def get_channel_info(channel_id):
     youtube = get_youtube_service()

@@ -34,15 +34,38 @@ Você vai retornar ao todo 10 sugestões de vídeo.
 Em cada uma das sugestões, mostre qual foi a inspiração.
 Procure dar sugestões se baseando nos vídeos com o maior número de visualizações.
 
-A segunda coisa é que quero que reescreva o títulos dos 5 vídeos mais vistos do canal.
-Não mude a ideia do título apenas reescreva.
+A segunda coisa é que quero que reescreva o título dos 5 vídeos mais vistos do canal.
+Não mude a ideia do título, apenas reescreva para que seja outro título, porém, falando a mesma coisa.
 Em cada reescrita que fizer, informe também o vídeo de base utilizado.
+                 
+Cada título que você gerar (seja uma sugestão ou reescrita) deve considerar o canal do YouTube para o qual você vai gerar as sugestões.
+                 
+TEMA DO CANAL DO YOUTUBE QUE RECEBERÁ AS SUGESTÕES:
+                 
+A dona do canal é uma psicóloca especialista em TCC e neurociência.
+O objetivo primário (principal) dela no YouTube é criar excelentes conteúdos para ajudar as pessoas aprenderem e se cuidarem.
+O objetivo secundário é oferecer terapia para aquelas pessoas que precisam.
+                 
+Ela tem tratamento/sessões de Terapia Cognitivo-Comportamental. Terapia focada em ansiedade, depressão, passividade, e insegurança, que são desdobramentos da ansiedade.
+As pacientes dela têm de 25 a 45 anos. São mulheres ativas profissionalmente, com problemas nos relacionamentos e com ansiedade. Elas tendem a ser passivas nas relações, inseguras e, algumas, emocionalmente dependentes. Esses problemas muitas vezes são fruto de uma falta de clareza sobre si mesmas, o que favorece a instalação da ansiedade. Ao ensiná-las sobre ansiedade, ajudo-as a se reconhecerem e se verem nessas situações.
+
+Ela acredita que "tudo que você não conhece não existe para você"! O autoconhecimento é a chave para a mudança. Ela ensina as pacientes a aprenderem não só sobre seu próprio funcionamento, mas também novas habilidades para lidar com a vida e seus desafios.
+
+Diferenciais da terapia dela:
+                 
+- Especialista em Terapia Cognitivo-Comportamental (TCC)  
+- Atendimento online em 17 países  
+- Mais de 10 mil horas de atendimento clínico  
+- Formação em transtornos de humor e ansiedade pelo IPq-USP
+                 
+Mas lembrando! O objetivo primário é ajudar as pessoas a aprenderem e se cuidarem.
 
 COMO VOCÊ VAI RETORNAR AS INFORMAÇÕES:
+
+Me responda sempre em português (mesmo que as informações do canal sejam em inglês).
+Eu quero um json como resposta. Apenas o JSON e nada mais. Não use coisas como "```json" para formatar o json. Eu quero apenas o json.
                  
-Eu quero um json como resposta. Apenas o JSON e nada mais.
-                 
-Exemplo:
+Exemplo de JSON:
 
 {
     "sugestions": {
@@ -54,7 +77,7 @@ Exemplo:
         ]         
     },
     "rewrites": [
-        { "rewrite": "A reescrita aqui", "videoId": "id do vídeo de inspiração" }
+        { "rewrite": "A reescrita aqui", "videoId": "id do vídeo de base" }
     ]
 }
 """
@@ -63,6 +86,7 @@ Exemplo:
 def create_videos_sugestions_from_channel(channel_json):
     response = completion(
         model="gpt-4o-mini",
+        # model="gpt-4o",
         messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": channel_json}],
     )
 
@@ -82,7 +106,8 @@ def process_json_to_objects(channelId, json_string):
                         suggestion = YtVideoSugestion(
                             channelId=channelId,
                             videoId=item["videoId"],
-                            sugestion=item["sugestion"]
+                            sugestion=item["sugestion"],
+                            fromType=suggestion_type
                         )
                         sugestions.append(suggestion)
 
@@ -112,13 +137,16 @@ def obj_to_json(obj):
 if __name__ == "__main__":
     conn = sqlite3.connect('youtube_db.sqlite3')
 
-    channels = get_all(conn)
+    channels = get_all(conn) # [0:1]
 
     for channel in channels:
+        print(f"Criando sugestões para canal {channel.handle}...")
+
         channel_json = json.dumps(obj_to_json(channel), ensure_ascii=False)
-        print(channel_json)
         
         response = create_videos_sugestions_from_channel(channel_json)
+        print("Resposta da OpenAI obtida com sucesso.")
+        
         sugestions, rewrites = process_json_to_objects(channel.channelId, response)
 
         delete_sugestions(conn, channel.channelId)        
@@ -126,3 +154,6 @@ if __name__ == "__main__":
 
         delete_rewrites(conn, channel.channelId)
         insert_rewrites(conn, rewrites)
+
+        print("Sugestões cadastradas no banco.")
+        print("==")

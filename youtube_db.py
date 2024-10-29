@@ -1,5 +1,5 @@
 import sqlite3
-from youtube_entity import YtChannelInfo, YtVideoInfo
+from youtube_entity import YtChannelInfo, YtVideoInfo, YtVideoSugestion, YtVideoRewrite
 
 def execute_sql_file(conn, sql_file_path):
     try:
@@ -31,6 +31,8 @@ def get_all(conn):
     for channel in channels:
         channel.last_videos_list = get_channel_latest_videos(conn, channel.channelId)
         channel.trending_videos_list = get_channel_trending_videos(conn, channel.channelId)
+        channel.sugestions_list = get_channel_sugestions(conn, channel.channelId)
+        channel.rewrites_list = get_channel_rewrites(conn, channel.channelId)
     
     return channels
 
@@ -51,7 +53,9 @@ def get_channels(conn):
                 title=row[2],
                 description=row[3],
                 last_videos_list=[],
-                trending_videos_list=[]
+                trending_videos_list=[],
+                sugestions_list=[],
+                rewrites_list=[]
             )
 
             channels.append(channel)
@@ -93,17 +97,17 @@ def insert_channel(conn, channel):
     except sqlite3.Error as e:
         print(f"Erro ao inserir canal: {e}")
 
-def get_channel_latest_videos(conn, channelId):
+def get_channel_latest_videos(conn, channelId, limit=20):
     sql = '''
         SELECT videoId, title, viewCount, publishedAt
         FROM YtVideoInfo
         WHERE channelId = ?
         ORDER BY publishedAt DESC
-        LIMIT 10
+        LIMIT ?
     '''
     try:
         cur = conn.cursor()
-        cur.execute(sql, (channelId,))
+        cur.execute(sql, (channelId, limit))
         rows = cur.fetchall()
         
         videos = []
@@ -123,17 +127,17 @@ def get_channel_latest_videos(conn, channelId):
         print(f"Erro ao obter vídeos do canal: {e}")
         return []
     
-def get_channel_trending_videos(conn, channelId):
+def get_channel_trending_videos(conn, channelId, limit=20):
     sql = '''
         SELECT videoId, title, viewCount, publishedAt
         FROM YtVideoInfo
         WHERE channelId = ?
         ORDER BY viewCount DESC
-        LIMIT 10
+        LIMIT ?
     '''
     try:
         cur = conn.cursor()
-        cur.execute(sql, (channelId,))
+        cur.execute(sql, (channelId, limit))
         rows = cur.fetchall()
         
         videos = []
@@ -180,6 +184,35 @@ def insert_video(conn, video):
     except sqlite3.Error as e:
         print(f"Erro ao inserir vídeo: {e}")
 
+def get_channel_sugestions(conn, channelId):
+    sql = '''
+        SELECT s.videoId, s.sugestion, s.fromType, v.title
+        FROM YtVideoSugestion s 
+        JOIN YtVideoInfo v ON s.videoId = v.videoId
+        WHERE s.channelId = ?
+    '''
+    try:
+        cur = conn.cursor()
+        cur.execute(sql, (channelId,))
+        rows = cur.fetchall()
+        
+        sugestions = []
+        for row in rows:
+            sugestion = YtVideoSugestion(
+                channelId=channelId,
+                videoId=row[0],
+                sugestion=row[1],
+                fromType=row[2],
+                videoTitle=row[3]
+            )
+            sugestions.append(sugestion)
+        
+        return sugestions
+
+    except sqlite3.Error as e:
+        print(f"Erro ao obter sugestões do.canal: {e}")
+        return []
+
 def delete_sugestions(conn, channelId):
     sql = '''
         DELETE FROM YtVideoSugestion
@@ -200,16 +233,44 @@ def insert_sugestions(conn, sugestions):
 
 def insert_sugestion(conn, sugestion):
     sql = '''
-        INSERT INTO YtVideoSugestion (channelId, videoId, sugestion)
-        VALUES (?, ?, ?)
+        INSERT INTO YtVideoSugestion (channelId, videoId, sugestion, fromType)
+        VALUES (?, ?, ?, ?)
     '''
     try:
         cur = conn.cursor()
-        cur.execute(sql, (sugestion.channelId, sugestion.videoId, sugestion.sugestion))
+        cur.execute(sql, (sugestion.channelId, sugestion.videoId, sugestion.sugestion, sugestion.fromType))
         conn.commit()
         print(f"Sugestão para o vídeo {sugestion.videoId} inserida com sucesso!")
     except sqlite3.Error as e:
         print(f"Erro ao inserir sugestão: {e}")
+
+def get_channel_rewrites(conn, channelId):
+    sql = '''
+        SELECT r.videoId, r.rewrite, v.title
+        FROM YtVideoRewrite r 
+        JOIN YtVideoInfo v ON r.videoId = v.videoId
+        WHERE r.channelId = ?
+    '''
+    try:
+        cur = conn.cursor()
+        cur.execute(sql, (channelId,))
+        rows = cur.fetchall()
+        
+        rewrites = []
+        for row in rows:
+            rewrite = YtVideoRewrite(
+                channelId=channelId,
+                videoId=row[0],
+                rewrite=row[1],
+                videoTitle=row[2]
+            )
+            rewrites.append(rewrite)
+        
+        return rewrites
+
+    except sqlite3.Error as e:
+        print(f"Erro ao obter reescritas do canal: {e}")
+        return []
 
 def delete_rewrites(conn, channelId):
     sql = '''
@@ -246,4 +307,5 @@ def insert_rewrite(conn, rewrite):
 if __name__ == "__main__":
     conn = sqlite3.connect('youtube_db.sqlite3')
 
-    execute_sql_file(conn, 'db-data-test.sql')
+    execute_sql_file(conn, 'db.sql')
+    # execute_sql_file(conn, 'db-data-test.sql')

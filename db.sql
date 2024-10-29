@@ -18,6 +18,7 @@ CREATE TABLE YtVideoSugestion (
     channelId TEXT NOT NULL,
     videoId TEXT NOT NULL,
     sugestion TEXT NOT NULL,
+    fromType TEXT NOT NULL,
     FOREIGN KEY (channelId) REFERENCES YtChannelInfo (channelId),
     FOREIGN KEY (videoId) REFERENCES YtVideoInfo (videoId)
 );
