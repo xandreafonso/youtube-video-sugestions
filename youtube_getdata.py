@@ -33,25 +33,25 @@ def chl_info(handle):
 
 handles = [
     "@AlanaAnijar",
-    "@rafaelgratta",
-    "@NeuroVox",
-    "@ClaramenteNT",
     "@drali",
-    "@Katimorton",
-    "@TherapyinaNutshell",
-    "@MarkTyrrellUnk",
-    "@theanxietyproject",
-    "@ocdandanxiety",
-    "@PracticalPsychologyTips",
-    "@PsychExplained",
-    "@DrJulie",
-    "@DraAnnaLuyzaAguiar",
     "@podpeopleanabeatriz",
+    "@ClaramenteNT",
+    "@psicologasandrabueno",
+    "@DraAnnaLuyzaAguiar",
+    "@theanxietyproject",
     "@AugustoCury",
+    "@PsychExplained",
     "@NeurologiaePsiquiatria",
+    "@TherapyinaNutshell",
+    "@NeuroVox",
+    "@Katimorton",
+    "@ocdandanxiety",
     "@danielamargotti",
+    # "@PracticalPsychologyTips", fala de relacionamentos/conquista
     "@psicojuliapaschoalino",
-    "@psicologasandrabueno"
+    "@rafaelgratta",
+    # "@DrJulie", não tem vídeos com mais de 3 minutos
+    "@MarkTyrrellUnk",
 ]
 
 if __name__ == "__main__":

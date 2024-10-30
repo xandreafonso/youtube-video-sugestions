@@ -85,8 +85,8 @@ Exemplo de JSON:
 
 def create_videos_sugestions_from_channel(channel_json):
     response = completion(
-        model="gpt-4o-mini",
-        # model="gpt-4o",
+        # model="gpt-4o-mini",
+        model="gpt-4o",
         messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": channel_json}],
     )
 
